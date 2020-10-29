@@ -1,0 +1,2 @@
+---
+vars_file: "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version }}.yml"

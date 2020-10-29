@@ -1,0 +1,12 @@
+- name: Check Ezeelogin servers are reachable
+  wait_for:
+    host: "{{ item.host }}"
+    port: "{{ item.port }}"
+    timeout: 5
+  loop:
+    - host: license.ezeelogin.com
+      port: 443
+    - host: license2.ezeelogin.com
+      port: 443
+    - host: downloads.ezeelogin.com
+      port: 443

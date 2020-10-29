@@ -1,0 +1,29 @@
+---
+iocube_loader_url: https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+
+ezeelogin_version: 7.23.0
+ezeelogin_download_url: "https://downloads.ezeelogin.com/ezlogin_{{ ezeelogin_version }}_php71.bin"
+ezeelogin_download_target: /opt
+ezeelogin_web_panel_files_path: /var/www/html/ezlogin
+ezeelogin_web_panel_system_files_path: /var/www/ezlogin
+ezeelogin_web_panel_uri_path: /ezlogin/
+ezeelogin_mysql_server_host: localhost
+ezeelogin_mysql_source_host: "{{ ezeelogin_mysql_server_host }}"
+ezeelogin_mysql_server_port: 3306
+ezeelogin_mysql_super_user: root
+ezeelogin_mysql_super_user_password: T0_B3_cH@NGED
+ezeelogin_use_secure_mysql_connection: False
+ezeelogin_admin_user: admin
+ezeelogin_admin_password: T0_B3_cH@NGED
+ezeelogin_admin_security_code: T0_B3_cH@NGED
+ezeelogin_force_https_web_panel: False
+ezeelogin_webssh_certificate_src:
+ezeelogin_webssh_certificate_remote_src: False
+ezeelogin_webssh_certificate_dest: /usr/local/etc/ezlogin/tls_cert.pem
+ezeelogin_webssh_key_src:
+ezeelogin_webssh_key_remote_src: False
+ezeelogin_webssh_key_dest: /usr/local/etc/ezlogin/tls_key.pem
+
+# clustering
+ezeelogin_masters_group_name: ezeelogin_masters
+ezeelogin_slaves_group_name: ezeelogin_slaves

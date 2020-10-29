@@ -1,0 +1,21 @@
+- name: Include OS specific vars file
+  include_vars: "{{ vars_file }}"
+
+- name: Check accesses
+  import_tasks: accesses.yml
+
+- name: Install packages
+  apt:
+    name: "{{ ezeelogin_required_packages }}"
+
+- name: Install ioncube loader
+  import_tasks: ioncube_loader.yml
+
+- name: Install Ezeelogin
+  import_tasks: ezeelogin.yml
+
+- name: Configure Ezeelogin webSSH
+  import_tasks: ezeelogin_webssh.yml
+
+- name: Configure Apache
+  import_tasks: apache.yml

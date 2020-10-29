@@ -1,0 +1,142 @@
+- name: Download Ezeelogin installer
+  get_url:
+    url: "{{ ezeelogin_download_url }}"
+    dest: "{{ ezeelogin_download_target }}"
+    mode: '0700'
+
+- name: Retrieve Ezeelogin cluster members
+  set_fact:
+    ezeelogin_is_clustered: True
+    ezeelogin_is_master: "{{ inventory_hostname in groups[ezeelogin_masters_group_name] }}"
+    ezeelogin_master: "{{ groups['ezeelogin_masters']
+                           | map('extract', hostvars)
+                           | selectattr('ezeelogin_cluster_id', 'defined')
+                           | selectattr('ezeelogin_cluster_id', 'equalto', ezeelogin_cluster_id)
+                           | map(attribute='inventory_hostname')
+                           | first }}"
+    ezeelogin_slave: "{{ groups['ezeelogin_slaves']
+                           | map('extract', hostvars)
+                           | selectattr('ezeelogin_cluster_id', 'defined')
+                           | selectattr('ezeelogin_cluster_id', 'equalto', ezeelogin_cluster_id)
+                           | map(attribute='inventory_hostname')
+                           | first }}"
+  when: ezeelogin_cluster_id | default(False, True) != False
+
+- name: Ezeelogin standalone or master specific install configuration
+  set_fact:
+    ezeelogin_specific_configuration: |
+      -adminuser {{ ezeelogin_admin_user }} \
+      -adminpass \'{{ ezeelogin_admin_password }}\' \
+      -adminsec \'{{ ezeelogin_admin_security_code }}\' \
+      -force_https {{ 'no' if ezeelogin_force_https_web_panel | bool == False else 'yes' }}
+  when: ezeelogin_is_clustered | default(False) == False or ezeelogin_is_master
+
+- name: Ezeelogin slave specific configuration
+  when: ezeelogin_is_clustered | default(False) and not ezeelogin_is_master
+  block:
+    - name: Compute Ezeelogin slave specific install configuration
+      set_fact:
+        ezeelogin_specific_configuration: |
+          -secondary {{ ansible_host }} \
+          -othernode {{ hostvars[ezeelogin_master]['ansible_host'] }} \
+          -oruser {{ hostvars[ezeelogin_master]['ansible_user'] | default('root') }} \
+          -orport {{ hostvars[ezeelogin_master]['ansible_port'] | default('22') }}
+
+    - name: Ensure slave can connect to the master
+      wait_for:
+        host: "{{ hostvars[ezeelogin_master]['ansible_host'] }}"
+        port: "{{ hostvars[ezeelogin_master]['ansible_port'] | default('22') }}"
+        timeout: 5
+
+    - name: Retrieve Ezeelogin master SSH keys
+      command: "ssh-keyscan {{ hostvars[ezeelogin_master]['ansible_host'] }}"
+      check_mode: False
+      changed_when: false
+      register: master_keys
+
+    - name: Add master keys to known_hosts
+      known_hosts:
+        name: "{{ hostvars[ezeelogin_master]['ansible_host'] }}"
+        key: "{{ item }}"
+        state: present
+      loop: "{{ master_keys.stdout_lines }}"
+
+- name: Install Ezeelogin
+  command:
+    cmd: |
+      /opt/{{ ezeelogin_bin }} -- \
+        -www {{ ezeelogin_web_panel_files_path }} \
+        -sys {{ ezeelogin_web_panel_system_files_path }} \
+        -uri {{ ezeelogin_web_panel_uri_path }} \
+        -dbhost {{ ezeelogin_mysql_server_host }} \
+        -dbsrchost {{ ezeelogin_mysql_source_host }} \
+        -dbport {{ ezeelogin_mysql_server_port }} \
+        -dbsuser {{ ezeelogin_mysql_super_user }} \
+        -dbspass \'{{ ezeelogin_mysql_super_user_password }}\' \
+        -mysql_encrypt {{ 'no' if ezeelogin_use_secure_mysql_connection | bool == False else 'yes' }} \
+        -ACCEPT_SETTINGS \
+        -I_ACCEPT_EULA {{ ezeelogin_specific_configuration | default('') }}
+    creates: /usr/local/etc/ezlogin/ez.conf
+  register: ezeelogin_installation
+  vars:
+    ezeelogin_bin: "{{ (ezeelogin_download_url | urlsplit('path'))[1:] }}"
+
+- name: Register Ezeelogin generated variables on standalone and master nodes
+  set_fact:
+    ezeelogin_generated_mysql_database: "{{ ezeelogin_installation.stdout | regex_search('MySQL\\sdatabase\\s+?:\\s(.+?)\\n', '\\1') | first }}"
+    ezeelogin_generated_mysql_user: "{{ ezeelogin_installation.stdout | regex_search('MySQL\\suser\\s+?:\\s(.+?)\\n', '\\1') | first }}"
+    ezeelogin_generated_mysql_password: "{{ ezeelogin_installation.stdout | regex_search('MySQL\\spassword\\s+?:\\s(.+?)\\n', '\\1') | first }}"
+  when: ezeelogin_installation is changed and (ezeelogin_is_clustered | default(False) == False or ezeelogin_is_master)
+
+- name: Ezeelogin master specific configuration
+  when: ezeelogin_is_clustered | default(False) and ezeelogin_is_master
+  vars:
+    mysql_conf_file: "{{ ansible_env.HOME }}/.my.cnf"
+  block:
+    - name: Retrieve Ezeelogin configuration
+      slurp:
+        src: /usr/local/etc/ezlogin/ez.conf
+      register: ezconf
+
+    - name: Retrieve Ezeelogin generated database user
+      set_fact:
+        ezeelogin_generated_mysql_user: "{{ ezeelogin_generated_mysql_user | default(ezconf['content'] | b64decode | regex_search('db_user\\s(.+?)\\n', '\\1') | first ) }}"
+
+    - name: Grant Ezeelogin slave database accesses
+      # To ensure idempotency, we need a way to check if slave accesses are already granted.
+      # As the Ezeelogin grant_host.php is encrypted we don't know for sure what it exactly does.
+      # At least we know it grants database accesses for the ezeelogin user from the slave host.
+      # So we use the following task as a check.
+      mysql_user:
+        login_host: "{{ ezeelogin_mysql_server_host }}"
+        login_user: "{{ ezeelogin_mysql_super_user }}"
+        login_password: "{{ ezeelogin_mysql_super_user_password }}"
+        name: "{{ ezeelogin_generated_mysql_user }}"
+        password: "{{ ezeelogin_generated_mysql_password | default(omit) }}"
+        host: "{{ hostvars[ezeelogin_slave]['ansible_host'] }}"
+        state: present
+      register: remote_access
+
+    - name: Generate Mysql configuration file
+      # It is required by the grant_host.php script.
+      blockinfile:
+        dest: "{{ mysql_conf_file }}"
+        create: True
+        mode: '0600'
+        block: |
+          [client]
+          user={{ ezeelogin_mysql_super_user }}
+          password="{{ ezeelogin_mysql_super_user_password }}"
+      no_log: True
+      when: remote_access is changed
+
+    - name: Grant Ezeelogin slave database accesses
+      command: "php /usr/local/ezlogin/grant_host.php {{ hostvars[ezeelogin_slave]['ansible_host'] }}"
+      failed_when: "'Granted access for remote host' not in access_granted.stdout"
+      register: access_granted
+      when: remote_access is changed
+
+    - name: Remove no longer needed Mysql configuration file
+      file:
+        path: "{{ mysql_conf_file }}"
+        state: absent
