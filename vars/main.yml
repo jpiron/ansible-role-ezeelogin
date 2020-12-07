@@ -1,2 +1,51 @@
 ---
 vars_file: "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version }}.yml"
+
+
+ezelogin_server_addition_parameters:
+  - name: name
+    is_mandatory: True
+  - name: password
+    is_mandatory: False
+  - name: ssh_key
+    is_mandatory: False
+  - name: passphrase
+    is_mandatory: False
+  - name: ip_address
+    is_mandatory: True
+  - name: ssh_port
+    is_mandatory: False
+  - name: ssh_user
+    is_mandatory: True
+  - name: switch_user
+    is_mandatory: False
+  - name: switch_pass
+    is_mandatory: False
+  - name: switch_sudo
+    is_mandatory: False
+  - name: prompt1
+    is_mandatory: False
+  - name: prompt2
+    is_mandatory: False
+  - name: prompt3
+    is_mandatory: False
+  - name: group
+    is_mandatory: True
+  - name: keep_password
+    is_mandatory: False
+  - name: enable_ssh
+    is_mandatory: False
+  - name: ishn
+    is_mandatory: False
+  - name: onhost
+    is_mandatory: False
+  - name: cp
+    is_mandatory: False
+  - name: dc
+    is_mandatory: False
+  - name: rc_host
+    is_mandatory: False
+  - name: rc_user
+    is_mandatory: False
+  - name: rc_pass
+    is_mandatory: False
