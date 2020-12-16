@@ -1,7 +1,7 @@
 - name: Check Ezeelogin servers are reachable
   wait_for:
-    host: "{{ item.host }}"
-    port: "{{ item.port }}"
+    host: "{{ item.host }}"
+    port: "{{ item.port }}"
     timeout: 5
   loop:
     - host: license.ezeelogin.com

@@ -3,9 +3,9 @@
 - name: Download and unarchive ioncube loader
   unarchive:
     src: "{{ iocube_loader_url }}"
-    dest: "{{ ioncube_installation_path | dirname}}"
+    dest: "{{ ioncube_installation_path | dirname }}"
     remote_src: yes
-    creates: "{{ ioncube_installation_path }}"
+    creates: "{{ ioncube_installation_path }}"
 
 - name: Configure ioncube as a Zend extension
   ini_file:
@@ -13,6 +13,7 @@
     section: PHP
     option: zend_extension
     value: "{{ ioncube_installation_path }}/ioncube_loader_lin_{{ php_version }}.so"
+    mode: '0644'
   loop:
     - "/etc/php/{{ php_version }}/apache2/php.ini"
     - "/etc/php/{{ php_version }}/cli/php.ini"

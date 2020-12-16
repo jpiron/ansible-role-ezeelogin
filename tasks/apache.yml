@@ -7,9 +7,9 @@
 
 - name: Ensure Apache document root matches ezeelogin_web_panel_files_path
   lineinfile:
-    path: "{{ item }}"
+    path: "{{ item }}"
     regexp: '^(\s+)DocumentRoot\s+.*'
     line: '\1DocumentRoot {{ ezeelogin_web_panel_files_path }}'
     backrefs: True
-  loop: "{{ apache_enabled_sites.files | map(attribute='path') }}"
+  loop: "{{ apache_enabled_sites.files | map(attribute='path') }}"
   notify: restart apache

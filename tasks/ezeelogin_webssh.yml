@@ -2,25 +2,26 @@
   command: "openssl req -new -days 365 -x509 -nodes -newkey rsa:2048 -out {{ ezeelogin_webssh_certificate_dest }} -keyout {{ ezeelogin_webssh_key_dest }}"
   args:
     creates: "{{ ezeelogin_webssh_certificate_dest }}"
-  when: ezeelogin_webssh_certificate_src | default(False, True) == False
+  when: not ezeelogin_webssh_certificate_src | default(False, True)
 
 - name: Copy certificate files
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     remote_src: "{{ item.remote_src }}"
+    mode: '0644'
   loop:
     - src: "{{ ezeelogin_webssh_certificate_src }}"
       dest: "{{ ezeelogin_webssh_certificate_dest }}"
       remote_src: "{{ ezeelogin_webssh_certificate_remote_src | default(False) }}"
-    - src: "{{ ezeelogin_webssh_key_src }}"
+    - src: "{{ ezeelogin_webssh_key_src }}"
       dest: "{{ ezeelogin_webssh_key_dest }}"
       remote_src: "{{ ezeelogin_webssh_key_remote_src | default(False) }}"
-  when: ezeelogin_webssh_certificate_src | default(False, True) != False and ezeelogin_webssh_key_src | default(False, True) != False
+  when: ezeelogin_webssh_certificate_src | default(False, True) and ezeelogin_webssh_key_src | default(False, True)
 
 - name: Ensure certificate files have proper permissions
   file:
-    path: "{{ item }}"
+    path: "{{ item }}"
     mode: '0644'
   loop:
     - "{{ ezeelogin_webssh_certificate_dest }}"
