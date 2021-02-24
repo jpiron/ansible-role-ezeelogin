@@ -1,8 +1,9 @@
+---
 - name: Generate self-signed certificates
   command: "openssl req -new -days 365 -x509 -nodes -newkey rsa:2048 -out {{ ezeelogin_webssh_certificate_dest }} -keyout {{ ezeelogin_webssh_key_dest }}"
   args:
     creates: "{{ ezeelogin_webssh_certificate_dest }}"
-  when: not ezeelogin_webssh_certificate_src | default(False, True)
+  when: not ezeelogin_webssh_certificate_src | default(false, true)
 
 - name: Copy certificate files
   copy:
@@ -13,11 +14,11 @@
   loop:
     - src: "{{ ezeelogin_webssh_certificate_src }}"
       dest: "{{ ezeelogin_webssh_certificate_dest }}"
-      remote_src: "{{ ezeelogin_webssh_certificate_remote_src | default(False) }}"
+      remote_src: "{{ ezeelogin_webssh_certificate_remote_src | default(false) }}"
     - src: "{{ ezeelogin_webssh_key_src }}"
       dest: "{{ ezeelogin_webssh_key_dest }}"
-      remote_src: "{{ ezeelogin_webssh_key_remote_src | default(False) }}"
-  when: ezeelogin_webssh_certificate_src | default(False, True) and ezeelogin_webssh_key_src | default(False, True)
+      remote_src: "{{ ezeelogin_webssh_key_remote_src | default(false) }}"
+  when: ezeelogin_webssh_certificate_src | default(false, true) and ezeelogin_webssh_key_src | default(false, true)
 
 - name: Ensure certificate files have proper permissions
   file:
@@ -30,4 +31,4 @@
 - name: Install webSSH NPM requirements
   npm:
     path: /var/www/ezlogin/application/external/webssh
-    production: True
+    production: true

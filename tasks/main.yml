@@ -1,3 +1,4 @@
+---
 - name: Include OS specific vars file
   include_vars: "{{ vars_file }}"
 

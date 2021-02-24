@@ -1,3 +1,4 @@
+---
 - name: Find Apache enabled sites
   find:
     paths: /etc/apache2/sites-enabled
@@ -10,6 +11,6 @@
     path: "{{ item }}"
     regexp: '^(\s+)DocumentRoot\s+.*'
     line: '\1DocumentRoot "{{ ezeelogin_web_panel_files_path }}"'
-    backrefs: True
+    backrefs: true
   loop: "{{ apache_enabled_sites.files | map(attribute='path') }}"
   notify: restart apache
