@@ -8,20 +8,20 @@ ezeelogin_web_panel_files_path: /var/www/html/ezlogin
 ezeelogin_web_panel_system_files_path: /var/www/ezlogin
 ezeelogin_web_panel_uri_path: /ezlogin/
 ezeelogin_mysql_server_host: localhost
-ezeelogin_mysql_source_host: "{{ ezeelogin_mysql_server_host }}"
+ezeelogin_mysql_source_host: "{{ ezeelogin_mysql_server_host }}"
 ezeelogin_mysql_server_port: 3306
 ezeelogin_mysql_super_user: root
 ezeelogin_mysql_super_user_password: T0_B3_cH@NGED
-ezeelogin_use_secure_mysql_connection: False
+ezeelogin_use_secure_mysql_connection: false
 ezeelogin_admin_user: admin
 ezeelogin_admin_password: T0_B3_cH@NGED
 ezeelogin_admin_security_code: T0_B3_cH@NGED
-ezeelogin_force_https_web_panel: False
+ezeelogin_force_https_web_panel: false
 ezeelogin_webssh_certificate_src:
-ezeelogin_webssh_certificate_remote_src: False
+ezeelogin_webssh_certificate_remote_src: false
 ezeelogin_webssh_certificate_dest: /usr/local/etc/ezlogin/tls_cert.pem
 ezeelogin_webssh_key_src:
-ezeelogin_webssh_key_remote_src: False
+ezeelogin_webssh_key_remote_src: false
 ezeelogin_webssh_key_dest: /usr/local/etc/ezlogin/tls_key.pem
 
 # clustering

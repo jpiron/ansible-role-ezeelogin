@@ -1,10 +1,11 @@
+---
 # See: https://www.ezeelogin.com/kb/article/5/how-to-install-ioncube-on-jump-server-7.html
 
 - name: Download and unarchive ioncube loader
   unarchive:
     src: "{{ iocube_loader_url }}"
     dest: "{{ ioncube_installation_path | dirname }}"
-    remote_src: yes
+    remote_src: true
     creates: "{{ ioncube_installation_path }}"
 
 - name: Configure ioncube as a Zend extension

@@ -1,3 +1,4 @@
+---
 - name: Check Ezeelogin servers are reachable
   wait_for:
     host: "{{ item.host }}"
