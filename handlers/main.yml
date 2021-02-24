@@ -3,3 +3,10 @@
   service:
     name: apache2.service
     state: restarted
+
+# The "ezeelogin acl update" topic is made for calling playbooks to take custom actions
+# on ACL changes by defining handlers that listen to this topic.
+- name: Record ACL update
+  set_fact:
+    ezeelogin_acl_updated: true
+  listen: "ezeelogin acl update"

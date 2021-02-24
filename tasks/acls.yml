@@ -1,0 +1,92 @@
+---
+# Ezeelogin does't provide an API to manage ACLs (yet ?).
+# Therefore, while it is ugly, ACL managment is done by updating the database directly.
+- name: Install required python dependencies
+  pip:
+    name: "PyMySQL"
+    executable: "{{ pip_executable }}"
+    state: present
+
+- name: Create or update ACLs
+  module_defaults:
+    community.mysql.mysql_query:
+      login_db: "{{ ezlogin_database_name }}"
+      login_user: "{{ ezlogin_database_user | default(ezeelogin_mysql_super_user) }}"
+      login_password: "{{ ezlogin_database_password | default(ezeelogin_mysql_super_user_password) }}"
+      login_port: "{{ ezlogin_database_port | default(ezeelogin_mysql_server_port) }}"
+      login_host: "{{ ezlogin_database_host | default(ezeelogin_mysql_server_host) }}"
+  block:
+    - set_fact:
+        ezeelogin_acl_updated: false
+
+    - name: Retrieve Ezeelogin servers along with their IDs
+      community.mysql.mysql_query:
+        query: "SELECT id,name FROM {{ ezlogin_database_table_prefix }}_servers;"
+      register: query_result
+
+    - name: Compute server name to ID dictionnary
+      set_fact:
+        server_name_id_dict: "{{ query_result.query_result[0] | items2dict(key_name='name', value_name='id') }}"
+
+    - name: Retrieve Ezeelogin users along with their IDs
+      community.mysql.mysql_query:
+        query: "SELECT id,username FROM {{ ezlogin_database_table_prefix }}_users;"
+      register: query_result
+
+    - name: Compute user name to ID dictionnary
+      set_fact:
+        user_name_id_dict: "{{ query_result.query_result[0] | items2dict(key_name='username', value_name='id') }}"
+
+    - name: Retrieve Ezeelogin server groups along with their IDs
+      community.mysql.mysql_query:
+        query: "SELECT id,name FROM {{ ezlogin_database_table_prefix }}_servergroups;"
+      register: query_result
+
+    - name: Compute server group name to ID dictionnary
+      set_fact:
+        server_group_name_id_dict: "{{ query_result.query_result[0] | items2dict(key_name='name', value_name='id') }}"
+
+    - name: Configure user to server ACLs
+      community.mysql.mysql_query:
+        query:
+          - "INSERT INTO {{ ezlogin_database_table_prefix }}_user_server_acls(user_id, server_id, access, created) \
+             VALUES ({{ user_name_id_dict[item.0.username] }}, {{ server_name_id_dict[item.1.name] }}, \
+                     '{{ 'Y' if item.1.state | default('present') == 'present' else 'N' }}', \
+                     '{{ '%Y-%m-%d %H:%M:%S' | strftime }}' ) \
+             ON DUPLICATE KEY UPDATE access=VALUES(access);"
+          - "SELECT {{ label | quote }}"
+      loop: "{{ ezeelogin_acls | subelements('ezeelogin_servers') }}"
+      loop_control:
+        label: "{{ label }}"
+      notify:
+        - ezeelogin acl update
+      register: user_to_server_acl_updates
+      vars:
+        label: "{{ 'Grant' if item.1.state | default('present') == 'present' else 'Remove' }} `{{ item.1.name }}` server access to {{ item.0.username }}"
+
+    - name: Configure user to server group ACLs
+      community.mysql.mysql_query:
+        query:
+          - "INSERT INTO {{ ezlogin_database_table_prefix }}_user_servergroup_acls(user_id, servergroup_id, access, created) \
+             VALUES ({{ user_name_id_dict[item.0.username] }}, {{ server_group_name_id_dict[item.1.name] }}, \
+                     '{{ 'Y' if item.1.state | default('present') == 'present' else 'N' }}', \
+                     '{{ '%Y-%m-%d %H:%M:%S' | strftime }}' ) \
+             ON DUPLICATE KEY UPDATE access=VALUES(access);"
+          - "SELECT {{ label | quote }}"
+      loop: "{{ ezeelogin_acls | subelements('ezeelogin_server_groups') }}"
+      loop_control:
+        label: "{{ label }}"
+      notify:
+        - ezeelogin acl update
+      register: user_to_servergroup_acl_updates
+      vars:
+        label: "{{ 'Grant' if item.1.state | default('present') == 'present' else 'Remove' }} `{{ item.1.name }}` server group access to {{ item.0.username }}"
+
+    - name: Compute ACL changes
+      set_fact:
+        ezeelogin_acl_changes: >-
+          {{ user_to_server_acl_updates.results | selectattr('changed')
+             | union(user_to_servergroup_acl_updates.results | selectattr('changed'))
+             | map(attribute='executed_queries')
+             | map('last')
+             | map('regex_replace', '^SELECT\s(.*)$', '\1') }}
