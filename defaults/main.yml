@@ -27,3 +27,5 @@ ezeelogin_webssh_key_dest: /usr/local/etc/ezlogin/tls_key.pem
 # clustering
 ezeelogin_masters_group_name: ezeelogin_masters
 ezeelogin_slaves_group_name: ezeelogin_slaves
+
+pip_executable: pip3
