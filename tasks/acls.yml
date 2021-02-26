@@ -55,7 +55,7 @@
                      '{{ '%Y-%m-%d %H:%M:%S' | strftime }}' ) \
              ON DUPLICATE KEY UPDATE access=VALUES(access);"
           - "SELECT {{ label | quote }}"
-      loop: "{{ ezeelogin_acls | subelements('ezeelogin_servers') }}"
+      loop: "{{ ezeelogin_acls | subelements('ezeelogin_servers', skip_missing=true) }}"
       loop_control:
         label: "{{ label }}"
       notify:
@@ -73,7 +73,7 @@
                      '{{ '%Y-%m-%d %H:%M:%S' | strftime }}' ) \
              ON DUPLICATE KEY UPDATE access=VALUES(access);"
           - "SELECT {{ label | quote }}"
-      loop: "{{ ezeelogin_acls | subelements('ezeelogin_server_groups') }}"
+      loop: "{{ ezeelogin_acls | subelements('ezeelogin_server_groups', skip_missing=true) }}"
       loop_control:
         label: "{{ label }}"
       notify:
