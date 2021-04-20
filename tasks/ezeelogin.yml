@@ -62,6 +62,14 @@
         state: present
       loop: "{{ master_keys.stdout_lines }}"
 
+- name: Ezeelogin specific update configuration
+  set_fact:
+    ezeelogin_specific_configuration: |
+      {{ ezeelogin_specific_configuration }} \
+      -update \
+      -force
+  when: is_ezeelogin_update
+
 - name: Install Ezeelogin
   command:
     cmd: |
@@ -77,7 +85,7 @@
         -mysql_encrypt {{ 'no' if not ezeelogin_use_secure_mysql_connection | bool else 'yes' }} \
         -ACCEPT_SETTINGS \
         -I_ACCEPT_EULA {{ ezeelogin_specific_configuration | default('') }}
-    creates: /usr/local/etc/ezlogin/ez.conf
+    creates: "{{ is_ezeelogin_update | ternary(omit, '/usr/local/etc/ezlogin/ez.conf') }}"
   register: ezeelogin_installation
   vars:
     ezeelogin_bin: "{{ (ezeelogin_download_url | urlsplit('path'))[1:] }}"
