@@ -8,4 +8,3 @@
         {{ lookup('template', 'server_addition.j2') }}
   register: server_addition
   changed_when: "'The server exists' not in server_addition.stdout"
-  failed_when: "'error' in server_addition.stdout and 'The server exists' not in server_addition.stdout"
