@@ -20,7 +20,7 @@
                            | selectattr('ezeelogin_cluster_id', 'defined')
                            | selectattr('ezeelogin_cluster_id', 'equalto', ezeelogin_cluster_id)
                            | map(attribute='inventory_hostname')
-                           | first }}"
+                           | first | default(None) }}"
   when: ezeelogin_cluster_id | default(false, true)
 
 - name: Ezeelogin standalone or master specific install configuration
@@ -98,7 +98,7 @@
   when: ezeelogin_installation is changed and (not ezeelogin_is_clustered | default(false) or ezeelogin_is_master)
 
 - name: Ezeelogin master specific configuration
-  when: ezeelogin_is_clustered | default(false) and ezeelogin_is_master
+  when: ezeelogin_is_clustered | default(false) and ezeelogin_is_master and ezeelogin_slave != ''
   vars:
     mysql_conf_file: "{{ ansible_env.HOME }}/.my.cnf"
   block:
