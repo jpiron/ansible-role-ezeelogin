@@ -8,3 +8,16 @@
         {{ lookup('template', 'server_addition.j2') }}
   register: server_addition
   changed_when: "'The server exists' not in server_addition.stdout"
+  when: server.state | default('present') == 'present'
+
+- name: Remove target server
+  command:
+    cmd: |
+      php /usr/local/ezlogin/ezwapi.php remove_server \
+        -api_url {{ ezeelogin_api_url }} \
+        -secret '{{ ezeelogin_api_secret }}' \
+        -name {{ server.name }}
+  changed_when: "'success' in server_deletion.stdout"
+  failed_when: "'success' not in server_deletion.stdout and 'Invalid server' not in server_deletion.stdout"
+  register: server_deletion
+  when: server.state | default('present') == 'absent'

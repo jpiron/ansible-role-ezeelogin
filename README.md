@@ -25,9 +25,9 @@ This is an arbitrary value to retrieve hosts of the same cluster.
     - role: ansible-role-ezeelogin
 ```
 
-### Server addition
+### Server addition/deletion
 
-Server addition through the API requires the [API to be manually enabled first](https://www.ezeelogin.com/kb/article/add-update-delete-servers-through-ezeelogin-api-257.html).\
+Server addition/deletion through the API requires the [API to be manually enabled first](https://www.ezeelogin.com/kb/article/add-update-delete-servers-through-ezeelogin-api-257.html).\
 As a result, no server addition will be performed while running this role.
 
 It should be done through a different Ansible task/playbook:
@@ -65,6 +65,18 @@ It should be done through a different Ansible task/playbook:
           ssh_port: "{{ ansible_port | default(22) }}"
           group: "{{ ezeelogin_server_group_name | default('unassigned') }}"
           enable_ssh: 'Y'
+
+    - name: Remove Ezeelogin target server on master node
+      import_role:
+        name: ansible-role-ezeelogin
+        tasks_from: add_server.yml
+      delegate_to: "{{ ezeelogin_master }}"
+      vars:
+        ezeelogin_api_url: https://ezeelogin.local
+        ezeelogin_api_secret: XXX
+        server:
+          name: foobar
+          state: absent
 ```
 
 Variables that can be set while adding a server are listed in `vars/main.yml::ezelogin_server_addition_parameters`
