@@ -119,6 +119,38 @@ It should be done through a different Ansible task/playbook:
                 state: present
 ```
 
+### Command guards
+
+This role provides a taskset `command_guards.yml` to manage Ezeelogin command guards. \
+
+As the command and command groups creations aren't managed by this roles yet, the command guards aren't created when
+running this role.
+
+It should be done through a different Ansible task/playbook:
+
+```yaml
+---
+- name: Configure Ezeelogin command guards
+  hosts:
+    - ezeelogin_servers
+  diff: True
+
+  tasks:
+    - name: Configure Ezeelogin command guards
+      import_role:
+        name: ansible-role-ezeelogin
+        tasks_from: command_guards.yml
+      vars:
+        ezlogin_database_table_prefix: foobarbaz
+        ezeelogin_command_guards:
+          - username: username_01
+            command_group_name: command_group_name_01
+            command_guard_type: Allow
+          - username: username_02
+            command_group_name: command_group_name_02
+            command_guard_type: Disallow
+```
+
 ## License
 
 MIT

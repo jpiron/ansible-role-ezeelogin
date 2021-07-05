@@ -10,3 +10,10 @@
   set_fact:
     ezeelogin_acl_updated: true
   listen: "ezeelogin acl update"
+
+# The "ezeelogin command guard update" topic is made for calling playbooks to take custom actions
+# on command guard changes by defining handlers that listen to this topic.
+- name: Record command guard update
+  set_fact:
+    ezeelogin_command_guards_updated: true
+  listen: "ezeelogin command guard update"
