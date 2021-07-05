@@ -30,3 +30,5 @@ ezeelogin_masters_group_name: ezeelogin_masters
 ezeelogin_slaves_group_name: ezeelogin_slaves
 
 pip_executable: pip3
+
+ezeelogin_command_guards: []
