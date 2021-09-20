@@ -6,8 +6,9 @@
         -api_url {{ ezeelogin_api_url }} \
         -secret '{{ ezeelogin_api_secret }}' \
         {{ lookup('template', 'server_addition.j2') }}
-  register: server_addition
   changed_when: "'The server exists' not in server_addition.stdout"
+  failed_when: not server_addition.stdout is regex("^200.*")
+  register: server_addition
   when: server.state | default('present') == 'present'
 
 - name: Remove target server
