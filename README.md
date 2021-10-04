@@ -66,6 +66,19 @@ It should be done through a different Ansible task/playbook:
           group: "{{ ezeelogin_server_group_name | default('unassigned') }}"
           enable_ssh: 'Y'
 
+    - name: Update Ezeelogin target server on master node
+      import_role:
+        name: ansible-role-ezeelogin
+        tasks_from: add_server.yml
+      delegate_to: "{{ ezeelogin_master }}"
+      vars:
+        ezeelogin_api_url: https://ezeelogin.local
+        ezeelogin_api_secret: XXX
+        server:
+          name: "{{ inventory_hostname }}"
+          ip_address: 1.1.1.1
+          state: updated
+
     - name: Remove Ezeelogin target server on master node
       import_role:
         name: ansible-role-ezeelogin
