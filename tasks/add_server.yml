@@ -11,6 +11,18 @@
   register: server_addition
   when: server.state | default('present') == 'present'
 
+- name: Update target server
+  command:
+    cmd: |
+      php /usr/local/ezlogin/ezwapi.php update_server \
+        -api_url {{ ezeelogin_api_url }} \
+        -secret '{{ ezeelogin_api_secret }}' \
+        {{ lookup('template', 'server_addition.j2') }}
+  changed_when: true
+  failed_when: not server_update.stdout is regex("^200.*")
+  register: server_update
+  when: server.state | default('present') == 'updated'
+
 - name: Remove target server
   command:
     cmd: |
