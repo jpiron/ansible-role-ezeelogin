@@ -25,11 +25,11 @@
 
 - name: Ezeelogin standalone or master specific install configuration
   set_fact:
-    ezeelogin_specific_configuration: |
-      -adminuser {{ ezeelogin_admin_user }} \
-      -adminpass \'{{ ezeelogin_admin_password }}\' \
-      -adminsec \'{{ ezeelogin_admin_security_code }}\' \
-      -force_https {{ 'no' if not ezeelogin_force_https_web_panel | bool else 'yes' }}
+    ezeelogin_installation_args:
+      - -adminuser {{ ezeelogin_admin_user }}
+      - -adminpass '{{ ezeelogin_admin_password }}'
+      - -adminsec '{{ ezeelogin_admin_security_code }}'
+      - -force_https {{ 'no' if not ezeelogin_force_https_web_panel | bool else 'yes' }}
   when: not ezeelogin_is_clustered | default(false) or ezeelogin_is_master
 
 - name: Ezeelogin slave specific configuration
@@ -37,11 +37,11 @@
   block:
     - name: Compute Ezeelogin slave specific install configuration
       set_fact:
-        ezeelogin_specific_configuration: |
-          -secondary {{ ansible_host }} \
-          -othernode {{ hostvars[ezeelogin_master]['ansible_host'] }} \
-          -oruser {{ hostvars[ezeelogin_master]['ansible_user'] | default('root') }} \
-          -orport {{ hostvars[ezeelogin_master]['ansible_port'] | default('22') }}
+        ezeelogin_installation_args:
+          - -secondary {{ ansible_host }}
+          - -othernode {{ hostvars[ezeelogin_master]['ansible_host'] }}
+          - -oruser {{ hostvars[ezeelogin_master]['ansible_user'] | default('root') }}
+          - -orport {{ hostvars[ezeelogin_master]['ansible_port'] | default('22') }}
 
     - name: Ensure slave can connect to the master
       wait_for:
@@ -64,31 +64,33 @@
 
 - name: Ezeelogin specific update configuration
   set_fact:
-    ezeelogin_specific_configuration: |
-      {{ ezeelogin_specific_configuration }} \
-      -update \
-      -force
+    ezeelogin_installation_args: "{{ ezeelogin_installation_args | union(['-update', '-force' ]) }}"
   when: is_ezeelogin_update
+
+- name: Set default installation args
+  set_fact:
+    ezeelogin_default_installation_args:
+      - /opt/{{ ezeelogin_bin }}
+      - --
+      - -www {{ ezeelogin_web_panel_files_path }}
+      - -sys {{ ezeelogin_web_panel_system_files_path }}
+      - -uri {{ ezeelogin_web_panel_uri_path }}
+      - -dbhost {{ ezeelogin_mysql_server_host }}
+      - -dbsrchost {{ ezeelogin_mysql_source_host }}
+      - -dbport {{ ezeelogin_mysql_server_port }}
+      - -dbsuser {{ ezeelogin_mysql_super_user }}
+      - -dbspass '{{ ezeelogin_mysql_super_user_password }}'
+      - -mysql_encrypt {{ 'no' if not ezeelogin_use_secure_mysql_connection | bool else 'yes' }}
+      - -ACCEPT_SETTINGS
+      - -I_ACCEPT_EULA
+  vars:
+    ezeelogin_bin: "{{ (ezeelogin_download_url | urlsplit('path'))[1:] }}"
 
 - name: Install Ezeelogin
   command:
-    cmd: |
-      /opt/{{ ezeelogin_bin }} -- \
-        -www {{ ezeelogin_web_panel_files_path }} \
-        -sys {{ ezeelogin_web_panel_system_files_path }} \
-        -uri {{ ezeelogin_web_panel_uri_path }} \
-        -dbhost {{ ezeelogin_mysql_server_host }} \
-        -dbsrchost {{ ezeelogin_mysql_source_host }} \
-        -dbport {{ ezeelogin_mysql_server_port }} \
-        -dbsuser {{ ezeelogin_mysql_super_user }} \
-        -dbspass \'{{ ezeelogin_mysql_super_user_password }}\' \
-        -mysql_encrypt {{ 'no' if not ezeelogin_use_secure_mysql_connection | bool else 'yes' }} \
-        -ACCEPT_SETTINGS \
-        -I_ACCEPT_EULA {{ ezeelogin_specific_configuration | default('') }}
+    argv: "{{ ezeelogin_default_installation_args | union(ezeelogin_installation_args | default([])) }}"
     creates: "{{ is_ezeelogin_update | ternary(omit, '/usr/local/etc/ezlogin/ez.conf') }}"
   register: ezeelogin_installation
-  vars:
-    ezeelogin_bin: "{{ (ezeelogin_download_url | urlsplit('path'))[1:] }}"
 
 - name: Register Ezeelogin generated variables on standalone and master nodes
   set_fact:
