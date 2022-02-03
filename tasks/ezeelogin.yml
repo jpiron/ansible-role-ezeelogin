@@ -40,7 +40,7 @@
         ezeelogin_installation_args:
           - -secondary {{ ansible_host }}
           - -othernode {{ hostvars[ezeelogin_master]['ansible_host'] }}
-          - -oruser {{ hostvars[ezeelogin_master]['ansible_user'] | default('root') }}
+          - -oruser {{ ezeelogin_oruser | default(hostvars[ezeelogin_master]['ansible_user']) | default('root') }}
           - -orport {{ hostvars[ezeelogin_master]['ansible_port'] | default('22') }}
 
     - name: Ensure slave can connect to the master
