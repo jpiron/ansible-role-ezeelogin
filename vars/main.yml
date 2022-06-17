@@ -51,3 +51,6 @@ ezelogin_server_addition_parameters:
     is_mandatory: false
   - name: rc_pass
     is_mandatory: false
+  - name: rdp_port
+    is_mandatory: true
+    default: 3389

@@ -1,5 +1,5 @@
 {% for parameter in ezelogin_server_addition_parameters -%}
   {% if parameter.is_mandatory or server[parameter.name] is defined -%}
-    -{{ parameter.name }} {{ server[parameter.name] }} \
+    -{{ parameter.name }} {{ server[parameter.name] | default(parameter.default) }} \
   {%- endif %}
 {% endfor %}
