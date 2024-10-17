@@ -13,9 +13,9 @@
     path: "{{ item }}"
     section: PHP
     option: zend_extension
-    value: "{{ ioncube_installation_path }}/ioncube_loader_lin_{{ php_version }}.so"
+    value: "{{ ioncube_installation_path }}/ioncube_loader_lin_{{ ezeelogin_php_version }}.so"
     mode: '0644'
   loop:
-    - "/etc/php/{{ php_version }}/apache2/php.ini"
-    - "/etc/php/{{ php_version }}/cli/php.ini"
+    - "/etc/php/{{ ezeelogin_php_version }}/apache2/php.ini"
+    - "/etc/php/{{ ezeelogin_php_version }}/cli/php.ini"
   notify: restart apache

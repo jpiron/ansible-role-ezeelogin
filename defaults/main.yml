@@ -2,6 +2,7 @@
 iocube_loader_url: https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
 
 ezeelogin_version: 7.23.0
+ezeelogin_php_version: 7.3
 is_ezeelogin_update: false
 ezeelogin_download_url: "https://downloads.ezeelogin.com/ezlogin_{{ ezeelogin_version }}_php71.bin"
 ezeelogin_download_target: /opt
