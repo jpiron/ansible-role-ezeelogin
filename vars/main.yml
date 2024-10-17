@@ -1,5 +1,5 @@
 ---
-vars_file: "{{ ansible_distribution | lower }}_{{ ansible_distribution_major_version }}.yml"
+vars_file: "{{ ansible_distribution | lower }}.yml"
 
 
 ezelogin_server_addition_parameters:

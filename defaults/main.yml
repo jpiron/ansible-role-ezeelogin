@@ -1,10 +1,10 @@
 ---
 iocube_loader_url: https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
 
-ezeelogin_version: 7.23.0
-ezeelogin_php_version: 7.3
+ezeelogin_version: 7.38.0
+ezeelogin_php_version: 8.2
 is_ezeelogin_update: false
-ezeelogin_download_url: "https://downloads.ezeelogin.com/ezlogin_{{ ezeelogin_version }}_php71.bin"
+ezeelogin_download_url: "https://downloads.ezeelogin.com/ezlogin_{{ ezeelogin_version }}_php82.bin"
 ezeelogin_download_target: /opt
 ezeelogin_web_panel_files_path: /var/www/html/ezlogin
 ezeelogin_web_panel_system_files_path: /var/www/ezlogin
@@ -25,6 +25,8 @@ ezeelogin_webssh_certificate_dest: /usr/local/etc/ezlogin/tls_cert.pem
 ezeelogin_webssh_key_src:
 ezeelogin_webssh_key_remote_src: false
 ezeelogin_webssh_key_dest: /usr/local/etc/ezlogin/tls_key.pem
+ezeelogin_ssh_key_type: ed25519
+ezeelogin_clssh_key_type: ed25519
 
 # clustering
 ezeelogin_masters_group_name: ezeelogin_masters
