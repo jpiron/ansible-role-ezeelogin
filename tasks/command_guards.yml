@@ -2,9 +2,10 @@
 # Ezeelogin does't provide an API to manage command guards (yet ?).
 # Therefore, while it is ugly, command guards managment is done by updating the database directly.
 - name: Install required python dependencies
-  pip:
+  ansible.builtin.pip:
     name: "PyMySQL"
     executable: "{{ pip_executable }}"
+    extra_args: "{{ pip_extra_args | default([]) | join(' ') }}"
     state: present
 
 - name: Create or update command guards
