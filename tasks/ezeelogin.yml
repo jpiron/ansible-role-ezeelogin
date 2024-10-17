@@ -67,6 +67,11 @@
     ezeelogin_installation_args: "{{ ezeelogin_installation_args | union(['-update', '-force' ]) }}"
   when: is_ezeelogin_update
 
+- name: Ezeelogin specific update configuration
+  set_fact:
+    ezeelogin_installation_args: "{{ ezeelogin_installation_args | union(['-sshkey ' + ezeelogin_sshkey]) }}"
+  when: ezeelogin_sshkey is defined
+
 - name: Set default installation args
   set_fact:
     ezeelogin_default_installation_args:
@@ -83,12 +88,15 @@
       - -mysql_encrypt {{ 'no' if not ezeelogin_use_secure_mysql_connection | bool else 'yes' }}
       - -ACCEPT_SETTINGS
       - -I_ACCEPT_EULA
+      - -ssh_key_type {{ ezeelogin_ssh_key_type }}
+      - -clssh_key_type {{ ezeelogin_clssh_key_type }}
   vars:
     ezeelogin_bin: "{{ (ezeelogin_download_url | urlsplit('path'))[1:] }}"
 
 - name: Install Ezeelogin
-  command:
-    argv: "{{ ezeelogin_default_installation_args | union(ezeelogin_installation_args | default([])) }}"
+  ansible.builtin.shell: "{{ ezeelogin_default_installation_args | union(ezeelogin_installation_args | default([])) | join(' ') }}"
+  args:
+    executable: /bin/bash
     creates: "{{ is_ezeelogin_update | ternary(omit, '/usr/local/etc/ezlogin/ez.conf') }}"
   register: ezeelogin_installation
 

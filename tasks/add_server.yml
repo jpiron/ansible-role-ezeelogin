@@ -7,7 +7,7 @@
         -secret '{{ ezeelogin_api_secret }}' \
         {{ lookup('template', 'server_addition.j2') }}
   changed_when: "'The server exists' not in server_addition.stdout"
-  failed_when: not server_addition.stdout is regex("^200.*")
+  failed_when: not 'The server exists' in server_addition.stdout and server_addition.stdout is regex(".*error.*")
   register: server_addition
   when: server.state | default('present') == 'present'
 

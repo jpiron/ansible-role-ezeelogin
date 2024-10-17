@@ -1,0 +1,15 @@
+---
+ezeelogin_required_packages:
+  - apache2
+  - git
+  - "libapache2-mod-php{{ ezeelogin_php_version }}"
+  - mariadb-client
+  - mariadb-server
+  - nodejs
+  - "php{{ ezeelogin_php_version }}"
+  - "php{{ ezeelogin_php_version }}-curl"
+  - "php{{ ezeelogin_php_version }}-ldap"
+  - "php{{ ezeelogin_php_version }}-mysql"
+  - "php{{ ezeelogin_php_version }}-xml"
+
+ioncube_installation_path: /usr/local/ioncube
