@@ -4,6 +4,8 @@
   args:
     creates: "{{ ezeelogin_webssh_certificate_dest }}"
   when: not ezeelogin_webssh_certificate_src | default(false, true)
+  tags:
+    - certificate
 
 - name: Copy certificate files
   copy:
@@ -19,6 +21,8 @@
       dest: "{{ ezeelogin_webssh_key_dest }}"
       remote_src: "{{ ezeelogin_webssh_key_remote_src | default(false) }}"
   when: ezeelogin_webssh_certificate_src | default(false, true) and ezeelogin_webssh_key_src | default(false, true)
+  tags:
+    - certificate
 
 - name: Ensure certificate files have proper permissions
   file:
@@ -27,6 +31,8 @@
   loop:
     - "{{ ezeelogin_webssh_certificate_dest }}"
     - "{{ ezeelogin_webssh_key_dest }}"
+  tags:
+    - certificate
 
 - name: Install webSSH NPM requirements
   npm:
